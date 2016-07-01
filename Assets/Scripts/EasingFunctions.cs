@@ -8,7 +8,14 @@ namespace ReMotion
 {
     public static class EasingFunctions
     {
-        // Robert Penner's Easing Functions : http://robertpenner.com/easing/
+        const float DefaultOvershoot = 1.70158f;
+        const float DefaultAmplitude = 1.70158f;
+        const float DefaultPeriod = 0.3f;
+
+        const float PiDivide2 = Mathf.PI / 2.0f;
+        const float PiMultiply2 = Mathf.PI * 2.0f;
+
+        // Robert Penner's Easing Functions : http://robertpenner.com/easing/ http://gizma.com/easing/ http://wiki.unity3d.com/index.php?title=Interpolate
 
         /*
             @t is the current time (or position) of the tween. This can be seconds or frames, steps, seconds, ms, whatever – as long as the unit is the same as is used for the total time [3].
@@ -45,115 +52,175 @@ namespace ReMotion
         public static readonly EasingFunction EaseInCirc = EaseInCirc_;
         public static readonly EasingFunction EaseOutCirc = EaseOutCirc_;
         public static readonly EasingFunction EaseInOutCirc = EaseInOutCirc_;
-        public static readonly EasingFunction EaseInBack = EaseInBack_;
-        public static readonly EasingFunction EaseOutBack = EaseOutBack_;
-        public static readonly EasingFunction EaseInOutBack = EaseInOutBack_;
-        public static readonly EasingFunction EaseInElastic = EaseInElastic_;
-        public static readonly EasingFunction EaseOutElastic = EaseOutElastic_;
-        public static readonly EasingFunction EaseInOutElastic = EaseInOutElastic_;
+
+        // currying...
+        // public static readonly EasingFunction EaseInBack = defaultEaseInBack;
+        // public static readonly EasingFunction EaseOutBack = EaseOutBack_;
+        // public static readonly EasingFunction EaseInOutBack = EaseInOutBack_;
+        // public static readonly EasingFunction EaseInElastic = EaseInElastic_;
+        // public static readonly EasingFunction EaseOutElastic = EaseOutElastic_;
+        // public static readonly EasingFunction EaseInOutElastic = EaseInOutElastic_;
+
         public static readonly EasingFunction EaseInBounce = EaseInBounce_;
         public static readonly EasingFunction EaseOutBounce = EaseOutBounce_;
         public static readonly EasingFunction EaseInOutBounce = EaseInOutBounce_;
 
-        const float PiDivide2 = Mathf.PI / 2.0f;
-        const float PiMultiply2 = Mathf.PI * 2.0f;
+        static readonly EasingFunction defaultEaseInBack = new EasingFunction((time, duration) => EaseInBack_(time, duration, DefaultOvershoot));
 
-        static float Linear_(float time, float duration, float overshootOrAmplitude, float period)
+        public static EasingFunction EaseInBack(float overshoot = DefaultOvershoot)
+        {
+            return (overshoot == DefaultOvershoot)
+                ? defaultEaseInBack
+                : new EasingFunction((time, duration) => EaseInBack_(time, duration, overshoot));
+        }
+
+        static readonly EasingFunction defaultEaseOutBack = new EasingFunction((time, duration) => EaseOutBack_(time, duration, DefaultOvershoot));
+
+        public static EasingFunction EaseOutBack(float overshoot = DefaultOvershoot)
+        {
+            return (overshoot == DefaultOvershoot)
+                ? defaultEaseOutBack
+                : new EasingFunction((time, duration) => EaseOutBack_(time, duration, overshoot));
+        }
+
+        static readonly EasingFunction defaultEaseInOutBack = new EasingFunction((time, duration) => EaseInOutBack_(time, duration, DefaultOvershoot));
+
+        public static EasingFunction EaseInOutBack(float overshoot = DefaultOvershoot)
+        {
+            return (overshoot == DefaultOvershoot)
+                ? defaultEaseInOutBack
+                : new EasingFunction((time, duration) => EaseInOutBack_(time, duration, overshoot));
+        }
+
+        static readonly EasingFunction defaultEaseInElastic = new EasingFunction((time, duration) => EaseInElastic_(time, duration, DefaultAmplitude, DefaultPeriod));
+
+        public static EasingFunction EaseInElastic(float amplitude = DefaultAmplitude, float period = DefaultPeriod)
+        {
+            return (amplitude == DefaultOvershoot && period == DefaultPeriod)
+                ? defaultEaseInElastic
+                : new EasingFunction((time, duration) => EaseInElastic_(time, duration, amplitude, period));
+        }
+
+        static readonly EasingFunction defaultEaseOutElastic = new EasingFunction((time, duration) => EaseOutElastic_(time, duration, DefaultAmplitude, DefaultPeriod));
+
+        public static EasingFunction EaseOutElastic(float amplitude = DefaultAmplitude, float period = DefaultPeriod)
+        {
+            return (amplitude == DefaultOvershoot && period == DefaultPeriod)
+                ? defaultEaseOutElastic
+                : new EasingFunction((time, duration) => EaseOutElastic_(time, duration, amplitude, period));
+        }
+
+        static readonly EasingFunction defaultEaseInOutElastic = new EasingFunction((time, duration) => EaseInOutElastic_(time, duration, DefaultAmplitude, DefaultPeriod));
+
+        public static EasingFunction EaseInOutElastic(float amplitude = DefaultAmplitude, float period = DefaultPeriod)
+        {
+            return (amplitude == DefaultOvershoot && period == DefaultPeriod)
+                ? defaultEaseInOutElastic
+                : new EasingFunction((time, duration) => EaseInOutElastic_(time, duration, amplitude, period));
+        }
+
+        static float Linear_(float time, float duration)
         {
             return time / duration;
         }
 
-        static float EaseInSine_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInSine_(float time, float duration)
         {
             return -1.0f * (float)Math.Cos(time / duration * PiDivide2) + 1.0f;
         }
 
-        static float EaseOutSine_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseOutSine_(float time, float duration)
         {
             return (float)Math.Sin(time / duration * PiDivide2);
         }
 
-        static float EaseInOutSine_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInOutSine_(float time, float duration)
         {
             return -0.5f * ((float)Math.Cos(Mathf.PI * time / duration) - 1);
         }
 
-        static float EaseInQuad_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInQuad_(float time, float duration)
         {
-            return (time /= duration) * time;
+            time /= duration;
+            return time * time;
         }
 
-        static float EaseOutQuad_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseOutQuad_(float time, float duration)
         {
-            return -(time /= duration) * (time - 2);
+            time /= duration;
+            return -(time) * (time - 2);
         }
 
-        static float EaseInOutQuad_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInOutQuad_(float time, float duration)
         {
-            if ((time /= duration * 0.5f) < 1) return 0.5f * time * time;
-            return -0.5f * ((--time) * (time - 2) - 1);
+            time /= (duration * 0.5f);
+            if (time < 1) return 0.5f * time * time;
+            time -= 1;
+            return -0.5f * (time * (time - 2) - 1);
         }
 
-        static float EaseInCubic_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInCubic_(float time, float duration)
         {
-            return (time /= duration) * time * time;
+            time /= duration;
+            return time * time * time;
         }
 
-        static float EaseOutCubic_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseOutCubic_(float time, float duration)
         {
-            return ((time = time / duration - 1) * time * time + 1);
+            time = (time / duration) - 1;
+            return (time * time * time) + 1;
         }
 
-        static float EaseInOutCubic_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInOutCubic_(float time, float duration)
         {
             if ((time /= duration * 0.5f) < 1) return 0.5f * time * time * time;
             return 0.5f * ((time -= 2) * time * time + 2);
         }
 
-        static float EaseInQuart_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInQuart_(float time, float duration)
         {
             return (time /= duration) * time * time * time;
         }
 
-        static float EaseOutQuart_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseOutQuart_(float time, float duration)
         {
             return -((time = time / duration - 1) * time * time * time - 1);
         }
 
-        static float EaseInOutQuart_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInOutQuart_(float time, float duration)
         {
             if ((time /= duration * 0.5f) < 1) return 0.5f * time * time * time * time;
             return -0.5f * ((time -= 2) * time * time * time - 2);
         }
 
-        static float EaseInQuint_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInQuint_(float time, float duration)
         {
             return (time /= duration) * time * time * time * time;
         }
 
-        static float EaseOutQuint_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseOutQuint_(float time, float duration)
         {
             return ((time = time / duration - 1) * time * time * time * time + 1);
         }
 
-        static float EaseInOutQuint_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInOutQuint_(float time, float duration)
         {
             if ((time /= duration * 0.5f) < 1) return 0.5f * time * time * time * time * time;
             return 0.5f * ((time -= 2) * time * time * time * time + 2);
         }
 
-        static float EaseInExpo_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInExpo_(float time, float duration)
         {
             return (time == 0) ? 0 : (float)Math.Pow(2, 10 * (time / duration - 1));
         }
 
-        static float EaseOutExpo_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseOutExpo_(float time, float duration)
         {
             if (time == duration) return 1;
             return (-(float)Math.Pow(2, -10 * time / duration) + 1);
         }
 
-        static float EaseInOutExpo_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInOutExpo_(float time, float duration)
         {
             if (time == 0) return 0;
             if (time == duration) return 1;
@@ -161,92 +228,93 @@ namespace ReMotion
             return 0.5f * (-(float)Math.Pow(2, -10 * --time) + 2);
         }
 
-        static float EaseInCirc_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInCirc_(float time, float duration)
         {
             return -((float)Math.Sqrt(1 - (time /= duration) * time) - 1);
         }
 
-        static float EaseOutCirc_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseOutCirc_(float time, float duration)
         {
             return (float)Math.Sqrt(1 - (time = time / duration - 1) * time);
         }
 
-        static float EaseInOutCirc_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInOutCirc_(float time, float duration)
         {
             if ((time /= duration * 0.5f) < 1) return -0.5f * ((float)Math.Sqrt(1 - time * time) - 1);
             return 0.5f * ((float)Math.Sqrt(1 - (time -= 2) * time) + 1);
         }
 
-        static float EaseInBack_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInBack_(float time, float duration, float overshoot)
         {
-            return (time /= duration) * time * ((overshootOrAmplitude + 1) * time - overshootOrAmplitude);
+            return (time /= duration) * time * ((overshoot + 1) * time - overshoot);
         }
 
-        static float EaseOutBack_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseOutBack_(float time, float duration, float overshoot)
         {
-            return ((time = time / duration - 1) * time * ((overshootOrAmplitude + 1) * time + overshootOrAmplitude) + 1);
+            return ((time = time / duration - 1) * time * ((overshoot + 1) * time + overshoot) + 1);
         }
 
-        static float EaseInOutBack_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInOutBack_(float time, float duration, float overshoot)
         {
-            if ((time /= duration * 0.5f) < 1) return 0.5f * (time * time * (((overshootOrAmplitude *= (1.525f)) + 1) * time - overshootOrAmplitude));
-            return 0.5f * ((time -= 2) * time * (((overshootOrAmplitude *= (1.525f)) + 1) * time + overshootOrAmplitude) + 2);
+            if ((time /= duration * 0.5f) < 1) return 0.5f * (time * time * (((overshoot *= (1.525f)) + 1) * time - overshoot));
+            return 0.5f * ((time -= 2) * time * (((overshoot *= (1.525f)) + 1) * time + overshoot) + 2);
         }
 
-        static float EaseInElastic_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInElastic_(float time, float duration, float amplitude, float period)
         {
             float s0;
             if (time == 0) return 0;
             if ((time /= duration) == 1) return 1;
             if (period == 0) period = duration * 0.3f;
-            if (overshootOrAmplitude < 1)
+            if (amplitude < 1)
             {
-                overshootOrAmplitude = 1;
+                amplitude = 1;
                 s0 = period / 4;
             }
-            else s0 = period / PiMultiply2 * (float)Math.Asin(1 / overshootOrAmplitude);
-            return -(overshootOrAmplitude * (float)Math.Pow(2, 10 * (time -= 1)) * (float)Math.Sin((time * duration - s0) * PiMultiply2 / period));
+            else s0 = period / PiMultiply2 * (float)Math.Asin(1 / amplitude);
+            return -(amplitude * (float)Math.Pow(2, 10 * (time -= 1)) * (float)Math.Sin((time * duration - s0) * PiMultiply2 / period));
         }
 
-        static float EaseOutElastic_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseOutElastic_(float time, float duration, float amplitude, float period)
         {
             float s1;
             if (time == 0) return 0;
             if ((time /= duration) == 1) return 1;
             if (period == 0) period = duration * 0.3f;
-            if (overshootOrAmplitude < 1)
+            if (amplitude < 1)
             {
-                overshootOrAmplitude = 1;
+                amplitude = 1;
                 s1 = period / 4;
             }
-            else s1 = period / PiMultiply2 * (float)Math.Asin(1 / overshootOrAmplitude);
-            return (overshootOrAmplitude * (float)Math.Pow(2, -10 * time) * (float)Math.Sin((time * duration - s1) * PiMultiply2 / period) + 1);
+            else s1 = period / PiMultiply2 * (float)Math.Asin(1 / amplitude);
+            return (amplitude * (float)Math.Pow(2, -10 * time) * (float)Math.Sin((time * duration - s1) * PiMultiply2 / period) + 1);
         }
 
-        static float EaseInOutElastic_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInOutElastic_(float time, float duration, float amplitude, float period)
         {
             float s;
             if (time == 0) return 0;
             if ((time /= duration * 0.5f) == 2) return 1;
             if (period == 0) period = duration * (0.3f * 1.5f);
-            if (overshootOrAmplitude < 1)
+            if (amplitude < 1)
             {
-                overshootOrAmplitude = 1;
+                amplitude = 1;
                 s = period / 4;
             }
-            else s = period / PiMultiply2 * (float)Math.Asin(1 / overshootOrAmplitude);
-            if (time < 1) return -0.5f * (overshootOrAmplitude * (float)Math.Pow(2, 10 * (time -= 1)) * (float)Math.Sin((time * duration - s) * PiMultiply2 / period));
-            return overshootOrAmplitude * (float)Math.Pow(2, -10 * (time -= 1)) * (float)Math.Sin((time * duration - s) * PiMultiply2 / period) * 0.5f + 1;
+            else s = period / PiMultiply2 * (float)Math.Asin(1 / amplitude);
+            if (time < 1) return -0.5f * (amplitude * (float)Math.Pow(2, 10 * (time -= 1)) * (float)Math.Sin((time * duration - s) * PiMultiply2 / period));
+            return amplitude * (float)Math.Pow(2, -10 * (time -= 1)) * (float)Math.Sin((time * duration - s) * PiMultiply2 / period) * 0.5f + 1;
         }
 
-        static float EaseInBounce_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInBounce_(float time, float duration)
         {
-            return 1 - EaseOutBounce_(duration - time, duration, -1, -1);
+            return 1 - EaseOutBounce_(duration - time, duration);
         }
 
-        static float EaseOutBounce_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseOutBounce_(float time, float duration)
         {
-            if ((time /= duration) < (1 / 2.75f))
+            time /= duration;
+            if (time < (1 / 2.75f))
             {
                 return (7.5625f * time * time);
             }
@@ -261,13 +329,13 @@ namespace ReMotion
             return (7.5625f * (time -= (2.625f / 2.75f)) * time + 0.984375f);
         }
 
-        static float EaseInOutBounce_(float time, float duration, float overshootOrAmplitude, float period)
+        static float EaseInOutBounce_(float time, float duration)
         {
             if (time < duration * 0.5f)
             {
-                return EaseInBounce_(time * 2, duration, -1, -1) * 0.5f;
+                return EaseInBounce_(time * 2, duration) * 0.5f;
             }
-            return EaseOutBounce_(time * 2 - duration, duration, -1, -1) * 0.5f + 0.5f;
+            return EaseOutBounce_(time * 2 - duration, duration) * 0.5f + 0.5f;
         }
     }
 }

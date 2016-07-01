@@ -3,14 +3,14 @@ using System.Collections;
 
 using System;
 using System.Collections.Generic;
-
+using UniRx;
 
 namespace ReMotion
 {
     /// <summary>
     /// Calculate ratio(return float between 0.0f ~ 1.0f)
     /// </summary>
-    public delegate float EasingFunction(float time, float duration, float overshootOrAmplitude, float period);
+    public delegate float EasingFunction(float time, float duration);
     public delegate TProperty TweenGetter<TObject, TProperty>(TObject obj);
     public delegate void TweenSetter<TObject, TProperty>(TObject obj, ref TProperty newValue);
 
@@ -21,47 +21,57 @@ namespace ReMotion
         Cycle
     }
 
-    [Flags]
-    public enum AxisConstraints
+    public enum TweenStatus
     {
-        None = 0,
-        X = 2,
-        Y = 4,
-        Z = 8,
-        W = 16
+        /// <summary>Created but not yet queued.</summary>
+        Stopped,
+        /// <summary>Queued tween but not yet run.</summary>
+        WaitingToRun,
+        /// <summary>Tween is runnning.</summary>
+        Running,
+        /// <summary>Tween is pausing.</summary>
+        Pausing,
     }
 
     public interface ITween
     {
-        bool MoveNext(float deltaTime, float unscaledDeltaTime);
+        // passed value is `ref` but must not rewrite values.
+        bool MoveNext(ref float deltaTime, ref float unscaledDeltaTime);
     }
 
     public class TweenSettings
     {
-        public LoopType LoopType { get; private set; }
-        public bool IgnoreTimeScale { get; private set; }
-    }
+        public static TweenSettings Default = new TweenSettings
+        {
+            LoopType = LoopType.None,
+            IsIgnoreTimeScale = false,
+        };
 
+        public LoopType LoopType { get; private set; }
+        public bool IsIgnoreTimeScale { get; private set; }
+    }
 
     public abstract class Tween<TObject, TProperty> : ITween
         where TObject : class
     {
         public TweenSettings Settings { get; private set; }
+        public TweenStatus Status { get; private set; }
 
-        protected readonly TObject target;
+        readonly TObject target;
+        readonly TweenGetter<TObject, TProperty> getter;
+        readonly TweenSetter<TObject, TProperty> setter;
+        readonly EasingFunction easingFunction;
+        readonly float duration;
 
-        protected readonly TweenGetter<TObject, TProperty> getter;
-        protected readonly TweenSetter<TObject, TProperty> setter;
-        protected readonly EasingFunction easingFunction;
-        protected readonly float duration;
-
-        protected TProperty from;
-        protected TProperty to;
-        protected TProperty changeValue;
+        TProperty from;
+        TProperty to;
+        TProperty difference;
 
         readonly TProperty originalFrom;
         readonly TProperty originalTo;
 
+        bool isCompleted;
+        Subject<Unit> completedEvent;
         float currentTime;
 
         public Tween(TweenSettings settings, TObject target, TweenGetter<TObject, TProperty> getter, TweenSetter<TObject, TProperty> setter, EasingFunction easingFunction, float duration, TProperty to)
@@ -79,20 +89,75 @@ namespace ReMotion
         {
             this.from = originalFrom;
             this.to = originalTo;
-            this.changeValue = GetChangeValue(from, to);
+            this.difference = GetDifference(from, to);
             currentTime = 0;
         }
 
-        protected abstract TProperty GetChangeValue(TProperty from, TProperty to);
+        // Start, Reset, Pause, AutoStart
 
-        protected abstract void CreateValue(ref float ratio, out TProperty value);
+        public Tween<TObject, TProperty> Start()
+        {
+            if (this.Status == TweenStatus.Stopped)
+            {
+                // Start.
+                this.Status = TweenStatus.WaitingToRun;
+            }
+            return this;
+        }
+
+        public Tween<TObject, TProperty> Start(TProperty from, float delay)
+        {
+            return this;
+        }
+
+        public Tween<TObject, TProperty> StartFrom(TProperty from)
+        {
+            return this;
+        }
+
+        public Tween<TObject, TProperty> StartAfter(float delay)
+        {
+            return this;
+        }
+
+        public IObservable<Unit> ToObservable()
+        {
+            if (completedEvent == null)
+            {
+                completedEvent = new Subject<Unit>();
+            }
+
+            if (Status == TweenStatus.Running)
+            {
+                return completedEvent.FirstOrDefault();
+            }
+
+            return Observable.Defer(() =>
+            {
+                if (Status == TweenStatus.Stopped)
+                {
+                    Start();
+                }
+
+                return completedEvent.FirstOrDefault();
+            });
+        }
+
+        protected abstract TProperty GetDifference(TProperty from, TProperty to);
+
+        protected abstract void CreateValue(ref TProperty from, ref TProperty difference, ref float ratio, out TProperty value);
 
         /// <summary>
         /// Called frame TweenManager.
         /// </summary>
-        public bool MoveNext(float deltaTime, float unscaledDeltaTime)
+        public bool MoveNext(ref float deltaTime, ref float unscaledDeltaTime)
         {
-            var time = (Settings.IgnoreTimeScale)
+            if (this.Status != TweenStatus.Running)
+            {
+                this.Status = TweenStatus.Running;
+            }
+
+            var time = (Settings.IsIgnoreTimeScale)
                 ? currentTime += unscaledDeltaTime
                 : currentTime += deltaTime;
 
@@ -104,9 +169,8 @@ namespace ReMotion
             }
 
             TProperty value;
-            // TODO:overshoot or amplituide
-            var ratio = easingFunction(time, duration, 0, 0);
-            CreateValue(ref ratio, out value);
+            var ratio = easingFunction(time, duration);
+            CreateValue(ref from, ref difference, ref ratio, out value);
 
             setter(target, ref value);
 
@@ -121,7 +185,7 @@ namespace ReMotion
                         var temp = from;
                         from = to;
                         to = temp;
-                        changeValue = GetChangeValue(from, to);
+                        difference = GetDifference(from, to);
                         currentTime = 0;
                         break;
                     case LoopType.None:

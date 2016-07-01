@@ -6,9 +6,9 @@ using UnityEngine;
 
 namespace ReMotion
 {
-    internal class TweenRunner
+    internal class TweenEngine
     {
-        internal static TweenRunner Instance = new TweenRunner();
+        internal static TweenEngine Instance = new TweenEngine();
 
         const int InitialSize = 16;
 
@@ -21,7 +21,7 @@ namespace ReMotion
         ITween[] tweens = new ITween[InitialSize];
         Queue<ITween> waitQueue = new Queue<ITween>();
 
-        private TweenRunner()
+        private TweenEngine()
         {
             this.unhandledExceptionCallback = ex => Debug.LogException(ex);
             MainThreadDispatcher.StartUpdateMicroCoroutine(RunEveryFrame());
@@ -53,6 +53,7 @@ namespace ReMotion
             }
 
             // worst case at multi threading, wait lock until finish Run() but it is super rarely.
+
             lock (arrayLock)
             {
                 // Ensure Capacity
@@ -83,7 +84,7 @@ namespace ReMotion
                     {
                         try
                         {
-                            if (!tween.MoveNext(deltaTime, unscaledDeltaTime))
+                            if (!tween.MoveNext(ref deltaTime, ref unscaledDeltaTime))
                             {
                                 tweens[i] = null;
                             }
@@ -111,7 +112,7 @@ namespace ReMotion
                         {
                             try
                             {
-                                if (!fromTail.MoveNext(deltaTime, unscaledDeltaTime))
+                                if (!fromTail.MoveNext(ref deltaTime, ref unscaledDeltaTime))
                                 {
                                     tweens[j] = null;
                                     j--;
@@ -147,7 +148,7 @@ namespace ReMotion
                     tail = i; // loop end
                     break; // LOOP END
 
-                NEXT_LOOP:
+                    NEXT_LOOP:
                     continue;
                 }
 
