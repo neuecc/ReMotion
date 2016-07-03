@@ -13,13 +13,11 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile>
-    </CompilerResponseFile>
+    <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.3.4p1</UnityVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -60,12 +58,6 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -74,6 +66,9 @@
     </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Common">
       <HintPath>Library\UnityAssemblies\UnityEditor.iOS.Extensions.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>Assets\PerfTest\DOTween\DOTween.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -89,13 +84,64 @@
     <Compile Include="Assets\PerfTest\LeanTween\LeanAudio.cs" />
     <Compile Include="Assets\PerfTest\LeanTween\LeanTest.cs" />
     <Compile Include="Assets\PerfTest\LeanTween\LeanTween.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\Callback.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\Easings.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\FluentSyntax.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\Preview.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\PreviewSetting.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\Tween.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenA.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenC.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenCA.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenFillAmount.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenNull.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenP.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenP3.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenR.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenR3.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenRX.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenRXY.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenRXYZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenRXZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenRY.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenRYZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenRZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenS.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenS3.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenSX.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenSXY.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenSXYZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenSXZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenSY.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenSYZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenSZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenVec1.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenVec1T.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenVec2.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenVec2T.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenVec3.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenVec3T.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenVec4.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenX.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenXY.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenXYZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenXZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenY.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenYZ.cs" />
+    <Compile Include="Assets\PerfTest\Uween\Scripts\TweenZ.cs" />
+    <Compile Include="Assets\PerfTest\iTween\iTween.cs" />
     <Compile Include="Assets\Scenes\MainScene.cs" />
     <Compile Include="Assets\Scripts\EasingFunctions.cs" />
     <Compile Include="Assets\Scripts\ObservableEasing.cs" />
     <Compile Include="Assets\Scripts\SpecificTweens.cs" />
     <Compile Include="Assets\Scripts\Tween.cs" />
-    <Compile Include="Assets\Scripts\TweenExtensions.cs" />
     <Compile Include="Assets\Scripts\TweenEngine.cs" />
+    <Compile Include="Assets\Scripts\TweenExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\PerfTest\DOTween\DOTween.XML" />
+    <None Include="Assets\PerfTest\DOTween\Editor\DOTweenEditor.XML" />
+    <None Include="Assets\PerfTest\DOTween\readme.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

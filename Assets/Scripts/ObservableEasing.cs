@@ -6,7 +6,7 @@ namespace ReMotion
     {
         const float DefaultOvershoot = 1.70158f;
         const float DefaultAmplitude = 1.70158f;
-        const float DefaultPeriod = 0.3f;
+        const float DefaultPeriod = 0.0f;
 
         public static IObservable<float> Create(EasingFunction easing, float duration, bool ignoreTimeScale = false)
         {

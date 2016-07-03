@@ -9,16 +9,37 @@ namespace ReMotion.Extensions
 {
     public static class TweenExtensions
     {
-        public static Tween<Transform, float> TweenPositionX(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool autoStart = true)
+        // Position X,Y,Z
+
+        public static Tween<Transform, Vector3> TweenPosition(this Transform transform, Vector3 to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
         {
             settings = settings ?? TweenSettings.Default;
-            easing = easing ?? EasingFunctions.Linear;
+            easing = easing ?? settings.DefaultEasing;
+
+            var tween = settings.UseVector3Tween(transform, x => x.position, (Transform t, ref Vector3 v) =>
+            {
+                t.position = v;
+            }, easing, duration, to, isRelativeTo);
+
+            if (autoStart)
+            {
+                tween.Start();
+            }
+
+            return tween;
+        }
+
+
+        public static Tween<Transform, float> TweenPositionX(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
+        {
+            settings = settings ?? TweenSettings.Default;
+            easing = easing ?? settings.DefaultEasing;
 
             var tween = settings.UseFloatTween(transform, x => x.position.x, (Transform t, ref float v) =>
             {
                 var p = t.position;
                 t.position = new Vector3 { x = v, y = p.y, z = p.z };
-            }, easing, duration, to);
+            }, easing, duration, to, isRelativeTo);
 
             if (autoStart)
             {
@@ -28,42 +49,21 @@ namespace ReMotion.Extensions
             return tween;
         }
 
-        public static IObservable<Unit> TweenPositionXAsync(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null)
+        public static IObservable<Unit> TweenPositionXAsync(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false)
         {
-            return TweenPositionX(transform, to, duration, easing, settings, false).ToObservable();
+            return TweenPositionX(transform, to, duration, easing, settings, isRelativeTo, autoStart: false).ToObservable();
         }
 
-        public static Tween<Transform, float> TweenLocalPositionX(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool autoStart = true)
-        {
-            settings = settings ?? TweenSettings.Default;
-            easing = easing ?? EasingFunctions.Linear;
-
-            var tween = settings.UseFloatTween(transform, x => x.localPosition.x, (Transform t, ref float v) =>
-            {
-                var p = t.localPosition;
-                t.localPosition = new Vector3 { x = v, y = p.y, z = p.z };
-            }, easing, duration, to);
-
-            if (autoStart)
-            {
-                tween.Start();
-            }
-
-            return tween;
-        }
-
-        // uGUI
-
-        public static Tween<UnityEngine.UI.Graphic, float> TweenAlpha(this UnityEngine.UI.Graphic graphic, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool autoStart = true)
+        public static Tween<Transform, float> TweenPositionY(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
         {
             settings = settings ?? TweenSettings.Default;
-            easing = easing ?? EasingFunctions.Linear;
+            easing = easing ?? settings.DefaultEasing;
 
-            var tween = settings.UseFloatTween(graphic, x => x.color.a, (UnityEngine.UI.Graphic g, ref float v) =>
+            var tween = settings.UseFloatTween(transform, x => x.position.y, (Transform t, ref float v) =>
             {
-                var c = g.color;
-                g.color = new Color { a = v, r = c.r, g = c.g, b = c.b };
-            }, easing, duration, to);
+                var p = t.position;
+                t.position = new Vector3 { x = p.x, y = v, z = p.z };
+            }, easing, duration, to, isRelativeTo);
 
             if (autoStart)
             {
@@ -73,10 +73,70 @@ namespace ReMotion.Extensions
             return tween;
         }
 
-        //public static Tween<UnityEngine.UI.Graphic, Color> TweenColor(this UnityEngine.UI.Graphic graphic, Color to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool autoStart = true)
+        public static IObservable<Unit> TweenPositionYAsync(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false)
+        {
+            return TweenPositionY(transform, to, duration, easing, settings, isRelativeTo, autoStart: false).ToObservable();
+        }
+
+        public static Tween<Transform, float> TweenPositionZ(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
+        {
+            settings = settings ?? TweenSettings.Default;
+            easing = easing ?? settings.DefaultEasing;
+
+            var tween = settings.UseFloatTween(transform, x => x.position.z, (Transform t, ref float v) =>
+            {
+                var p = t.position;
+                t.position = new Vector3 { x = p.x, y = p.y, z = v };
+            }, easing, duration, to, isRelativeTo);
+
+            if (autoStart)
+            {
+                tween.Start();
+            }
+
+            return tween;
+        }
+
+        public static IObservable<Unit> TweenPositionZAsync(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false)
+        {
+            return TweenPositionZ(transform, to, duration, easing, settings, isRelativeTo, autoStart: false).ToObservable();
+        }
+
+        // LocalPositionX, Y, Z
+
+
+
+
+
+
+
+
+
+        //public static Tween<Transform, float> TweenLocalPositionX(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool autoStart = true)
         //{
         //    settings = settings ?? TweenSettings.Default;
-        //    easing = easing ?? EasingFunctions.Linear;
+        //    easing = easing ?? settings.DefaultEasing;
+
+        //    var tween = settings.UseFloatTween(transform, x => x.localPosition.x, (Transform t, ref float v) =>
+        //    {
+        //        var p = t.localPosition;
+        //        t.localPosition = new Vector3 { x = v, y = p.y, z = p.z };
+        //    }, easing, duration, to);
+
+        //    if (autoStart)
+        //    {
+        //        tween.Start();
+        //    }
+
+        //    return tween;
+        //}
+
+        //// uGUI
+
+        //public static Tween<UnityEngine.UI.Graphic, float> TweenAlpha(this UnityEngine.UI.Graphic graphic, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool autoStart = true)
+        //{
+        //    settings = settings ?? TweenSettings.Default;
+        //    easing = easing ?? settings.DefaultEasing;
 
         //    var tween = settings.UseFloatTween(graphic, x => x.color.a, (UnityEngine.UI.Graphic g, ref float v) =>
         //    {
@@ -92,22 +152,41 @@ namespace ReMotion.Extensions
         //    return tween;
         //}
 
-        public static Tween<UnityEngine.UI.Image, float> TweenFillAmount(this UnityEngine.UI.Image image, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool autoStart = true)
-        {
-            settings = settings ?? TweenSettings.Default;
-            easing = easing ?? EasingFunctions.Linear;
+        ////public static Tween<UnityEngine.UI.Graphic, Color> TweenColor(this UnityEngine.UI.Graphic graphic, Color to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool autoStart = true)
+        ////{
+        ////    settings = settings ?? TweenSettings.Default;
+        ////    easing = easing ?? settings.DefaultEasing;
 
-            var tween = settings.UseFloatTween(image, x => x.fillAmount, (UnityEngine.UI.Image img, ref float v) =>
-            {
-                img.fillAmount = v;
-            }, easing, duration, to);
+        ////    var tween = settings.UseFloatTween(graphic, x => x.color.a, (UnityEngine.UI.Graphic g, ref float v) =>
+        ////    {
+        ////        var c = g.color;
+        ////        g.color = new Color { a = v, r = c.r, g = c.g, b = c.b };
+        ////    }, easing, duration, to);
 
-            if (autoStart)
-            {
-                tween.Start();
-            }
+        ////    if (autoStart)
+        ////    {
+        ////        tween.Start();
+        ////    }
 
-            return tween;
-        }
+        ////    return tween;
+        ////}
+
+        //public static Tween<UnityEngine.UI.Image, float> TweenFillAmount(this UnityEngine.UI.Image image, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool autoStart = true)
+        //{
+        //    settings = settings ?? TweenSettings.Default;
+        //    easing = easing ?? settings.DefaultEasing;
+
+        //    var tween = settings.UseFloatTween(image, x => x.fillAmount, (UnityEngine.UI.Image img, ref float v) =>
+        //    {
+        //        img.fillAmount = v;
+        //    }, easing, duration, to);
+
+        //    if (autoStart)
+        //    {
+        //        tween.Start();
+        //    }
+
+        //    return tween;
+        //}
     }
 }

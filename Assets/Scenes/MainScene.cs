@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
+using Uween;
 
+using DG.Tweening;
 using UniRx;
 using System.Collections;
 using ReMotion.Extensions;
 using UnityEngine.UI;
 using System.Linq;
+using System.Collections.Generic;
+using System;
 
 namespace ReMotion.Sandbox
 {
@@ -43,6 +47,9 @@ namespace ReMotion.Sandbox
             graph.texture = texture;
             graph.texture.filterMode = FilterMode.Point;
             ResetGraph();
+
+            UniRx.MainThreadDispatcher.Initialize();
+            LeanTween.init(20000);
         }
 
         void ResetGraph()
@@ -70,14 +77,16 @@ namespace ReMotion.Sandbox
             var l = last;
             foreach (var v2 in Enumerable.Range(0, 101).Select(i => Vector2.Lerp(l, to, (float)i / 100.0f)).Select(t => new { x = (int)t.x, y = (int)t.y }).Distinct())
             {
+                var color = Color.red;
+                color.a = 0.5f;
                 // bold
-                texture.SetPixel(v2.x, v2.y, Color.red);
-                texture.SetPixel(v2.x + 1, v2.y, Color.red);
-                texture.SetPixel(v2.x + 1, v2.y + 1, Color.red);
-                texture.SetPixel(v2.x + 1, v2.y - 1, Color.red);
-                texture.SetPixel(v2.x - 1, v2.y + 1, Color.red);
-                texture.SetPixel(v2.x - 1, v2.y, Color.red);
-                texture.SetPixel(v2.x - 1, v2.y - 1, Color.red);
+                texture.SetPixel(v2.x, v2.y, color);
+                texture.SetPixel(v2.x + 1, v2.y, color);
+                texture.SetPixel(v2.x + 1, v2.y + 1, color);
+                texture.SetPixel(v2.x + 1, v2.y - 1, color);
+                texture.SetPixel(v2.x - 1, v2.y + 1, color);
+                texture.SetPixel(v2.x - 1, v2.y, color);
+                texture.SetPixel(v2.x - 1, v2.y - 1, color);
             }
             last = to;
             texture.Apply();
@@ -96,14 +105,47 @@ namespace ReMotion.Sandbox
                 var to = new Vector2(x, y);
                 foreach (var v2 in Enumerable.Range(0, 101).Select(i => Vector2.Lerp(last, to, (float)i / 100.0f)).Select(t => new { x = (int)t.x, y = (int)t.y }).Distinct())
                 {
+
+                    var color = Color.blue;
+                    color.a = 0.5f;
                     // bold
-                    texture.SetPixel(v2.x, v2.y, Color.blue);
-                    texture.SetPixel(v2.x + 1, v2.y, Color.blue);
-                    texture.SetPixel(v2.x + 1, v2.y + 1, Color.blue);
-                    texture.SetPixel(v2.x + 1, v2.y - 1, Color.blue);
-                    texture.SetPixel(v2.x - 1, v2.y + 1, Color.blue);
-                    texture.SetPixel(v2.x - 1, v2.y, Color.blue);
-                    texture.SetPixel(v2.x - 1, v2.y - 1, Color.blue);
+                    texture.SetPixel(v2.x, v2.y, color);
+                    texture.SetPixel(v2.x + 1, v2.y, color);
+                    texture.SetPixel(v2.x + 1, v2.y + 1, color);
+                    texture.SetPixel(v2.x + 1, v2.y - 1, color);
+                    texture.SetPixel(v2.x - 1, v2.y + 1, color);
+                    texture.SetPixel(v2.x - 1, v2.y, color);
+                    texture.SetPixel(v2.x - 1, v2.y - 1, color);
+                }
+                last = to;
+                texture.Apply();
+            });
+        }
+
+        void DrawGraphYellow(IObservable<float> sequence)
+        {
+            var last = new Vector2(150, 150);
+            var totalSeconds = 0f;
+            sequence.FrameTimeInterval().Subscribe(s =>
+            {
+                totalSeconds += (float)s.Interval.TotalSeconds;
+                var x = (int)((width) * (totalSeconds / 1.0f)) + 150;
+                var y = (int)(s.Value * (height)) + 150;
+
+                var to = new Vector2(x, y);
+                foreach (var v2 in Enumerable.Range(0, 101).Select(i => Vector2.Lerp(last, to, (float)i / 100.0f)).Select(t => new { x = (int)t.x, y = (int)t.y }).Distinct())
+                {
+
+                    var color = Color.yellow;
+                    color.a = 0.5f;
+                    // bold
+                    texture.SetPixel(v2.x, v2.y, color);
+                    texture.SetPixel(v2.x + 1, v2.y, color);
+                    texture.SetPixel(v2.x + 1, v2.y + 1, color);
+                    texture.SetPixel(v2.x + 1, v2.y - 1, color);
+                    texture.SetPixel(v2.x - 1, v2.y + 1, color);
+                    texture.SetPixel(v2.x - 1, v2.y, color);
+                    texture.SetPixel(v2.x - 1, v2.y - 1, color);
                 }
                 last = to;
                 texture.Apply();
@@ -122,6 +164,45 @@ namespace ReMotion.Sandbox
                 DrawGraph(ref last, totalSeconds, x.Value);
                 TweenX(target, x.Value);
             });
+        }
+
+        bool startStopwatch = false;
+        System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+        List<double> stopList = new List<double>(100000);
+        List<GameObject> testObjects = new List<GameObject>(100000);
+
+        void Update()
+        {
+            sw.Reset();
+            sw.Start();
+        }
+
+        void LateUpdate()
+        {
+            sw.Stop();
+            if (startStopwatch)
+            {
+                stopList.Add(sw.Elapsed.TotalMilliseconds);
+            }
+        }
+
+        void InitPerf()
+        {
+            startStopwatch = false;
+            stopList.Clear();
+            foreach (var item in testObjects)
+            {
+                GameObject.Destroy(item);
+            }
+            testObjects.Clear();
+            for (int i = 0; i < 10000; i++)
+            {
+                var createEmpty = new GameObject("test" + i);
+                testObjects.Add(createEmpty);
+            }
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
         }
 
         void OnGUI()
@@ -261,37 +342,43 @@ namespace ReMotion.Sandbox
             if (GUILayout.Button("EaseInBack"))
             {
                 MoveStart(ObservableEasing.EaseInBack(1.0f));
-                DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeInBack));
+                //DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeInBack));
+                DrawGraphYellow(DoTweenObservable(Ease.InBack));
             }
 
             if (GUILayout.Button("EaseOutBack"))
             {
                 MoveStart(ObservableEasing.EaseOutBack(1.0f));
-                DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeOutBack));
+                //DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeOutBack));
+                DrawGraphYellow(DoTweenObservable(Ease.OutBack));
             }
 
             if (GUILayout.Button("EaseInOutBack"))
             {
                 MoveStart(ObservableEasing.EaseInOutBack(1.0f));
-                DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeInOutBack));
+                //DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeInOutBack));
+                DrawGraphYellow(DoTweenObservable(Ease.InOutBack));
             }
 
             if (GUILayout.Button("EaseInElastic"))
             {
                 MoveStart(ObservableEasing.EaseInElastic(1.0f));
-                DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeInElastic));
+                //DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeInElastic));
+                DrawGraphYellow(DoTweenObservable(Ease.InElastic));
             }
 
             if (GUILayout.Button("EaseOutElastic"))
             {
                 MoveStart(ObservableEasing.EaseOutElastic(1.0f));
-                DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeOutElastic));
+                //DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeOutElastic));
+                DrawGraphYellow(DoTweenObservable(Ease.OutElastic));
             }
 
             if (GUILayout.Button("EaseInOutElastic"))
             {
                 MoveStart(ObservableEasing.EaseInOutElastic(1.0f));
-                DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeInOutElastic));
+                //DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeInOutElastic));
+                DrawGraphYellow(DoTweenObservable(Ease.InOutElastic));
             }
 
             if (GUILayout.Button("EaseInBounce"))
@@ -310,6 +397,99 @@ namespace ReMotion.Sandbox
             {
                 MoveStart(ObservableEasing.EaseInOutBounce(1.0f));
                 DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeInOutBounce));
+            }
+            
+            if (GUILayout.Button("ShowAvgResult"))
+            {
+                UnityEngine.Debug.Log("Avg:" + stopList.Where(x => x > 3.0f).Average());
+            }
+
+            if (GUILayout.Button("ReMotion"))
+            {
+                InitPerf();
+                Observable.NextFrame().Subscribe(____ =>
+                {
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    foreach (var xxx in testObjects)
+                    {
+                        xxx.transform.TweenPosition(new Vector3(10, 10, 10), 3.0f, EasingFunctions.Linear);
+                    }
+                    sw.Stop();
+                    UnityEngine.Debug.Log("ReMotion Initial:" + sw.Elapsed.TotalMilliseconds + "ms");
+
+                    Observable.TimerFrame(3).Subscribe(__ => startStopwatch = true);
+                });
+            }
+
+            if (GUILayout.Button("DOTween"))
+            {
+                InitPerf();
+                Observable.NextFrame().Subscribe(____ =>
+                {
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    foreach (var xxx in testObjects)
+                    {
+                        xxx.transform.DOMove(new Vector3(10, 10, 10), 3f).SetEase(Ease.Linear);
+                    }
+                    sw.Stop();
+                    UnityEngine.Debug.Log("DOTween Initial:" + sw.Elapsed.TotalMilliseconds + "ms");
+
+                    Observable.TimerFrame(3).Subscribe(__ => startStopwatch = true);
+                });
+            }
+
+            if (GUILayout.Button("LeanTween"))
+            {
+                InitPerf();
+
+                Observable.NextFrame().Subscribe(____ =>
+                {
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    foreach (var xxx in testObjects)
+                    {
+                        LeanTween.move(xxx, new Vector3(10, 10, 10), 3.0f).setEase(LeanTweenType.linear);
+                    }
+                    sw.Stop();
+                    UnityEngine.Debug.Log("LeanTween Initial:" + sw.Elapsed.TotalMilliseconds + "ms");
+
+                    Observable.TimerFrame(3).Subscribe(__ => startStopwatch = true);
+                });
+            }
+
+            if (GUILayout.Button("iTween"))
+            {
+                InitPerf();
+
+                Observable.NextFrame().Subscribe(____ =>
+                {
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    foreach (var xxx in testObjects)
+                    {
+                        iTween.MoveTo(xxx, new Vector3(10f, 10f, 10f), 3.0f);
+                    }
+                    sw.Stop();
+                    UnityEngine.Debug.Log("iTween Initial:" + sw.Elapsed.TotalMilliseconds + "ms");
+
+                    Observable.TimerFrame(3).Subscribe(__ => startStopwatch = true);
+                });
+            }
+
+            if (GUILayout.Button("Uween"))
+            {
+                InitPerf();
+
+                Observable.NextFrame().Subscribe(____ =>
+                {
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    foreach (var xxx in testObjects)
+                    {
+                        Uween.TweenXYZ.Add(xxx, 3.0f, new Vector3(10, 10, 10));
+                    }
+                    sw.Stop();
+                    UnityEngine.Debug.Log("Uween Initial:" + sw.Elapsed.TotalMilliseconds + "ms");
+
+                    Observable.TimerFrame(3).Subscribe(__ => startStopwatch = true);
+                });
             }
         }
 
@@ -342,5 +522,19 @@ namespace ReMotion.Sandbox
                 return Disposable.Empty;
             });
         }
+
+        IObservable<float> DoTweenObservable(Ease easingType)
+        {
+            return Observable.Create<float>(observer =>
+            {
+                var t = DOVirtual.Float(0, 1, 1, x => observer.OnNext(x));
+                t.OnComplete(() => observer.OnCompleted());
+                t.SetEase(easingType);
+                t.Restart();
+
+                return Disposable.Empty;
+            });
+        }
+
     }
 }
