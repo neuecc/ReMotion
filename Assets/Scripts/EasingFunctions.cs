@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ReMotion
 {
-    public static class EasingFunctions
+    public static partial class EasingFunctions
     {
         const float DefaultOvershoot = 1.70158f;
         const float DefaultAmplitude = 1.70158f;
@@ -105,6 +105,32 @@ namespace ReMotion
             return (amplitude == DefaultOvershoot && period == DefaultPeriod)
                 ? defaultEaseInOutElastic
                 : new EasingFunction((time, duration) => EaseInOutElastic_(time, duration, amplitude, period));
+        }
+
+        // TODO:...
+        public static EasingFunction Shake(float amplitude = 1.0f)
+        {
+            // var next = 
+
+            return new EasingFunction((time, duration) =>
+            {
+                return UnityEngine.Random.Range(0, amplitude);
+            });
+        }
+
+        // Animation Curve
+
+        public static EasingFunction AnimationCurve(AnimationCurve animationCurve)
+        {
+            if (animationCurve.keys.Length == 0) return EasingFunctions.Linear;
+
+            var curveDuration = animationCurve.keys[animationCurve.keys.Length - 1].time;
+
+            return new EasingFunction((time, duration) =>
+            {
+                var scaledTime = time * curveDuration / duration;
+                return animationCurve.Evaluate(scaledTime);
+            });
         }
 
         // Function Core

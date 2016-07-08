@@ -233,7 +233,7 @@ namespace ReMotion
             }
         }
 
-        public IObservable<Unit> ToObservable()
+        public IObservable<Unit> ToObservable(bool stopWhenDisposed = true)
         {
             if (completedEvent == null)
             {
@@ -242,7 +242,10 @@ namespace ReMotion
 
             if (Status == TweenStatus.Running)
             {
-                return completedEvent.FirstOrDefault().DoOnCancel(() => this.Stop());
+                var obs = completedEvent.FirstOrDefault();
+                return (stopWhenDisposed)
+                    ? obs.DoOnCancel(() => this.Stop())
+                    : obs;
             }
 
             return Observable.Defer(() =>
@@ -252,7 +255,10 @@ namespace ReMotion
                     Start();
                 }
 
-                return completedEvent.FirstOrDefault().DoOnCancel(() => this.Stop());
+                var obs = completedEvent.FirstOrDefault();
+                return (stopWhenDisposed)
+                    ? obs.DoOnCancel(() => this.Stop())
+                    : obs;
             });
         }
 
@@ -272,11 +278,11 @@ namespace ReMotion
                 this.Status = TweenStatus.Stopped;
                 return false;
             }
-            if (this.Status == TweenStatus.Pausing)
+            else if (this.Status == TweenStatus.Pausing)
             {
                 return true;
             }
-            if (this.Status != TweenStatus.Running)
+            else if (this.Status != TweenStatus.Running)
             {
                 this.Status = TweenStatus.Running;
             }
