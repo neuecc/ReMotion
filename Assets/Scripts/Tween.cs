@@ -15,9 +15,14 @@ namespace ReMotion
 
     public enum LoopType
     {
+        /// <summary>One shot linear tween.</summary>
         None,
+        /// <summary>Repeat infinite from start.</summary>
         Restart,
-        Cycle
+        /// <summary>Repeat infinite cycling loop.</summary>
+        Cycle,
+        /// <summary>One shot cycle tween.</summary>
+        CycleOnce
     }
 
     public enum TweenStatus : byte
@@ -42,7 +47,9 @@ namespace ReMotion
 
     public class TweenSettings
     {
-        public static TweenSettings Default = new TweenSettings();
+        public static TweenSettings Default = new TweenSettings()
+        {
+        };
 
         public static readonly TweenSettings Cycle = new TweenSettings
         {
@@ -54,9 +61,14 @@ namespace ReMotion
             LoopType = LoopType.Restart,
         };
 
+        public static readonly TweenSettings CycleOnce = new TweenSettings
+        {
+            LoopType = LoopType.CycleOnce,
+        };
+
         public static readonly TweenSettings IgnoreTimeScale = new TweenSettings
         {
-            IsIgnoreTimeScale = true
+            IsIgnoreTimeScale = true,
         };
 
         public static readonly TweenSettings IgnoreTimeScaleCycle = new TweenSettings
@@ -69,6 +81,12 @@ namespace ReMotion
         {
             IsIgnoreTimeScale = true,
             LoopType = LoopType.Restart
+        };
+
+        public static readonly TweenSettings IgnoreTimeScaleCycleOnce = new TweenSettings
+        {
+            IsIgnoreTimeScale = true,
+            LoopType = LoopType.CycleOnce
         };
 
 
@@ -113,6 +131,8 @@ namespace ReMotion
         Subject<Unit> completedEvent;
         float currentTime;
         float delayTime;
+        // TODO:
+        // int repeatCount;
 
         public Tween(TweenSettings settings, TObject target, TweenGetter<TObject, TProperty> getter, TweenSetter<TObject, TProperty> setter, EasingFunction easingFunction, float duration, TProperty to, bool isRelativeTo)
         {
@@ -154,6 +174,7 @@ namespace ReMotion
             return this;
         }
 
+
         public Tween<TObject, TProperty> Start(TProperty from, float delay)
         {
             // TODO:set from, delay
@@ -165,6 +186,7 @@ namespace ReMotion
             // TODO:set from, delay
             return this;
         }
+
 
         public Tween<TObject, TProperty> StartFrom(TProperty from)
         {
@@ -329,6 +351,7 @@ namespace ReMotion
                         currentTime = 0;
                         break;
                     case LoopType.Cycle: // swap from -> to
+                    case LoopType.CycleOnce:
                         var temp = from;
                         from = to;
                         to = temp;

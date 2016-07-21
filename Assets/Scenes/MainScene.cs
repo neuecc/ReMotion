@@ -205,6 +205,17 @@ namespace ReMotion.Sandbox
             GC.Collect();
         }
 
+        void Destroy2()
+        {
+            startStopwatch = false;
+            stopList.Clear();
+            foreach (var item in testObjects)
+            {
+                GameObject.Destroy(item);
+            }
+            testObjects.Clear();
+        }
+
         void OnGUI()
         {
             if (GUILayout.Button("Linear"))
@@ -398,7 +409,7 @@ namespace ReMotion.Sandbox
                 MoveStart(ObservableEasing.EaseInOutBounce(1.0f));
                 DrawGraphBlue(LeanTweenObservable(LeanTweenType.easeInOutBounce));
             }
-            
+
             if (GUILayout.Button("ShowAvgResult"))
             {
                 UnityEngine.Debug.Log("Avg:" + stopList.Where(x => x > 3.0f).Average());

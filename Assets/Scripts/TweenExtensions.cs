@@ -9,8 +9,11 @@ namespace ReMotion.Extensions
 {
     public static class TweenExtensions
     {
-        // Position X,Y,Z
+        // Position
 
+        /// <summary>
+        /// Tween transfrom position.
+        /// </summary>
         public static Tween<Transform, Vector3> TweenPosition(this Transform transform, Vector3 to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
         {
             settings = settings ?? TweenSettings.Default;
@@ -29,6 +32,27 @@ namespace ReMotion.Extensions
             return tween;
         }
 
+        /// <summary>
+        /// Tween transfrom position(X, Y).
+        /// </summary>
+        public static Tween<Transform, Vector2> TweenPositionXY(this Transform transform, Vector2 to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
+        {
+            settings = settings ?? TweenSettings.Default;
+            easing = easing ?? settings.DefaultEasing;
+
+            var tween = settings.UseVector2Tween(transform, x => x.position, (Transform t, ref Vector2 v) =>
+            {
+                var p = t.position;
+                t.position = new Vector3 { x = v.x, y = v.y, z = p.z };
+            }, easing, duration, to, isRelativeTo);
+
+            if (autoStart)
+            {
+                tween.Start();
+            }
+
+            return tween;
+        }
 
         public static Tween<Transform, float> TweenPositionX(this Transform transform, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
         {
@@ -103,7 +127,6 @@ namespace ReMotion.Extensions
         }
 
         // LocalPositionX, Y, Z
-
 
 
 
