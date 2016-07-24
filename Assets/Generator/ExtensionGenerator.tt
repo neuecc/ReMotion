@@ -1,0 +1,127 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+<#
+
+    var items = new[]
+    {
+        new Generate 
+        {
+             TargetType = "Transform", TweenType = "Vector3", TargetProperty = "position",
+             Name = "Position", Comment = "Tween transform position.",
+             Original = "", Setter = "target.position = value" 
+        },
+        new Generate
+        { 
+            TargetType = "Transform", TweenType = "Vector2", TargetProperty = "position",
+            Name = "PositionXY", Comment = "Tween transform position(X, Y)." ,
+            Original = "var p = target.position;", Setter = "target.position = new Vector3 { x = value.x, y = value.y, z = p.z }"
+        },
+        new Generate
+        { 
+            TargetType = "Transform", TweenType = "Single", TargetProperty = "position.x",
+            Name = "PositionX", Comment = "Tween transform position(X)." ,
+            Original = "var p = target.position;", Setter = "target.position = new Vector3 { x = value, y = p.y, z = p.z }"
+        },
+        new Generate
+        { 
+            TargetType = "Transform", TweenType = "Single", TargetProperty = "position.y",
+            Name = "PositionY", Comment = "Tween transform position(Y)." ,
+            Original = "var p = target.position;", Setter = "target.position = new Vector3 { x = p.x, y = value, z = p.z }"
+        },
+        new Generate
+        { 
+            TargetType = "Transform", TweenType = "Single", TargetProperty = "position.z",
+            Name = "PositionZ", Comment = "Tween transform position(Z)." ,
+            Original = "var p = target.position;", Setter = "target.position = new Vector3 { x = p.x, y = p.y, z = value }"
+        },
+
+
+
+
+
+
+
+
+        
+        new Generate
+        { 
+            TargetType = "Graphic", TweenType = "Single", TargetProperty = "color.a",
+            Name = "Alpha", Comment = "Tween color alpha." ,
+            Original = "var x = target.color;", Setter = "target.color = new Color { r = x.r, g = x.g, b = x.b, a = value }"
+        },
+
+        
+        new Generate
+        { 
+            TargetType = "Graphic", TweenType = "Color", TargetProperty = "color",
+            Name = "Color", Comment = "Tween color." ,
+            Original = "", Setter = "target.color = value"
+        },
+    };
+#>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UniRx;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace ReMotion.Extensions._______________ // copy and modify this.
+{
+    public static class TweenExtensions
+    {
+
+<# foreach(var item in items) { #>
+        /// <summary><#= item.Comment #></summary>
+        public static Tween<<#= item.TargetType #>, <#= item.TweenType#>> Tween<#= item.Name #>(this <#= item.TargetType #> <#= ToLower(item.TargetType) #>, <#= item.TweenType#> to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
+        {
+            settings = settings ?? TweenSettings.Default;
+            easing = easing ?? settings.DefaultEasing;
+
+            var tween = settings.Use<#= item.TweenType#>Tween(<#= ToLower(item.TargetType) #>, x => x.<#= item.TargetProperty#>, (<#= item.TargetType #> target, ref <#= item.TweenType#> value) =>
+            {
+                <#= item.Original #>
+                <#= item.Setter #>;
+            }, easing, duration, to, isRelativeTo);
+
+            if (autoStart)
+            {
+                tween.Start();
+            }
+
+            return tween;
+        }
+
+        /// <summary><#= item.Comment #></summary>
+        public static IObservable<Unit> Tween<#= item.Name #>Async(this <#= item.TargetType #> <#= ToLower(item.TargetType) #>, <#= item.TweenType#> to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false)
+        {
+            return Tween<#= item.Name #>(<#= ToLower(item.TargetType) #>, to, duration, easing, settings, isRelativeTo, autoStart: false).ToObservable();
+        }
+
+<# } #>
+    }
+}
+
+<#+
+
+public class Generate
+{
+    public string TargetType; // Transform
+    public string TweenType; // Vector3
+    public string TargetProperty; // position
+    public string Original;
+    public string Setter;
+    public string Name;
+    public string Comment;
+}
+
+string ToLower(string s)
+{
+    return char.ToLower(s[0]) + s.Substring(1, s.Length - 1);
+}
+#>

@@ -86,6 +86,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Generator\ExtensionGenerator.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ExtensionGenerator.tt</DependentUpon>
+    </Compile>
     <Compile Include="Assets\PerfTest\LeanTween\ILeanTween.cs" />
     <Compile Include="Assets\PerfTest\LeanTween\LTDescr.cs" />
     <Compile Include="Assets\PerfTest\LeanTween\LTDescrImpl.cs" />
@@ -153,6 +158,15 @@
     <None Include="Assets\PerfTest\DOTween\DOTween.XML" />
     <None Include="Assets\PerfTest\DOTween\Editor\DOTweenEditor.XML" />
     <None Include="Assets\PerfTest\DOTween\readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\Generator\ExtensionGenerator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ExtensionGenerator.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

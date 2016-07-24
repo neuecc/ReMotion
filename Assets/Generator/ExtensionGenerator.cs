@@ -6,7 +6,7 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ReMotion.Extensions
+namespace ReMotion.Extensions._______________ // copy and modify this.
 {
     public static class TweenExtensions
     {
@@ -19,7 +19,7 @@ namespace ReMotion.Extensions
 
             var tween = settings.UseVector3Tween(transform, x => x.position, (Transform target, ref Vector3 value) =>
             {
-
+                
                 target.position = value;
             }, easing, duration, to, isRelativeTo);
 
@@ -175,7 +175,7 @@ namespace ReMotion.Extensions
 
             var tween = settings.UseColorTween(graphic, x => x.color, (Graphic target, ref Color value) =>
             {
-
+                
                 target.color = value;
             }, easing, duration, to, isRelativeTo);
 

@@ -5,9 +5,9 @@ namespace ReMotion
 {
     public static class TweenSettingsExtensions
     {
-        public static Tween<TObject, float> UseFloatTween<TObject>(this TweenSettings settings, TObject target,
-            TweenGetter<TObject, float> getter, TweenSetter<TObject, float> setter,
-            EasingFunction easingFunction, float duration, float to, bool isRelative)
+        public static Tween<TObject, Single> UseSingleTween<TObject>(this TweenSettings settings, TObject target,
+            TweenGetter<TObject, Single> getter, TweenSetter<TObject, Single> setter,
+            EasingFunction easingFunction, float duration, Single to, bool isRelative)
             where TObject : class
         {
             return new FloatTween<TObject>(settings, target, getter, setter, easingFunction, duration, to, isRelative);
