@@ -140,7 +140,9 @@
     <Compile Include="Assets\PerfTest\iTween\iTween.cs" />
     <Compile Include="Assets\Scenes\PeformanceCompare.cs" />
     <Compile Include="Assets\Scenes\MainScene.cs" />
+    <Compile Include="Assets\Scripts\Delegates.cs" />
     <Compile Include="Assets\Scripts\EasingFunctions.cs" />
+    <Compile Include="Assets\Scripts\TweenSettings.cs" />
     <Compile Include="Assets\Scripts\ObservableEasing.cs" />
     <Compile Include="Assets\Scripts\SpecificTweens.cs" />
     <Compile Include="Assets\Scripts\Tween.cs" />

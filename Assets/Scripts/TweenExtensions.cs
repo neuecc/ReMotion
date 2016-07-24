@@ -33,6 +33,14 @@ namespace ReMotion.Extensions
         }
 
         /// <summary>
+        /// Tween transfrom position.
+        /// </summary>
+        public static IObservable<Unit> TweenPositionAsync(this Transform transform, Vector3 to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false)
+        {
+            return TweenPosition(transform, to, duration, easing, settings, isRelativeTo, autoStart: false).ToObservable();
+        }
+
+        /// <summary>
         /// Tween transfrom position(X, Y).
         /// </summary>
         public static Tween<Transform, Vector2> TweenPositionXY(this Transform transform, Vector2 to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)

@@ -3,37 +3,17 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 using UniRx;
+using UniRx.Triggers;
 
 namespace ReMotion
 {
-    /// <summary>
-    /// Calculate ratio(return float between 0.0f ~ 1.0f)
-    /// </summary>
-    public delegate float EasingFunction(float time, float duration);
-    public delegate TProperty TweenGetter<TObject, TProperty>(TObject obj);
-    public delegate void TweenSetter<TObject, TProperty>(TObject obj, ref TProperty newValue);
-
-    public enum LoopType
-    {
-        /// <summary>One shot linear tween.</summary>
-        None,
-        /// <summary>Repeat infinite from start.</summary>
-        Restart,
-        /// <summary>Repeat infinite cycling loop.</summary>
-        Cycle,
-        /// <summary>One shot cycle tween.</summary>
-        CycleOnce
-    }
-
     public enum TweenStatus : byte
     {
-        /// <summary>Created but not yet queued.</summary>
+        /// <summary>Stopped, Tween is not queued.</summary>
         Stopped,
-        /// <summary>Queued tween but not yet run.</summary>
-        WaitingToRun,
-        /// <summary>Tween is runnning.</summary>
+        /// <summary>Tween is queued and runnning.</summary>
         Running,
-        /// <summary>Tween is pausing.</summary>
+        /// <summary>Tween is queued and pausing.</summary>
         Pausing,
         /// <summary>Queued stop command.</summary>
         WaitingToStop
@@ -43,68 +23,6 @@ namespace ReMotion
     {
         // passed value is `ref` but must not rewrite values.
         bool MoveNext(ref float deltaTime, ref float unscaledDeltaTime);
-    }
-
-    public class TweenSettings
-    {
-        public static TweenSettings Default = new TweenSettings()
-        {
-        };
-
-        public static readonly TweenSettings Cycle = new TweenSettings
-        {
-            LoopType = LoopType.Cycle,
-        };
-
-        public static readonly TweenSettings Restart = new TweenSettings
-        {
-            LoopType = LoopType.Restart,
-        };
-
-        public static readonly TweenSettings CycleOnce = new TweenSettings
-        {
-            LoopType = LoopType.CycleOnce,
-        };
-
-        public static readonly TweenSettings IgnoreTimeScale = new TweenSettings
-        {
-            IsIgnoreTimeScale = true,
-        };
-
-        public static readonly TweenSettings IgnoreTimeScaleCycle = new TweenSettings
-        {
-            IsIgnoreTimeScale = true,
-            LoopType = LoopType.Cycle
-        };
-
-        public static readonly TweenSettings IgnoreTimeScaleRestart = new TweenSettings
-        {
-            IsIgnoreTimeScale = true,
-            LoopType = LoopType.Restart
-        };
-
-        public static readonly TweenSettings IgnoreTimeScaleCycleOnce = new TweenSettings
-        {
-            IsIgnoreTimeScale = true,
-            LoopType = LoopType.CycleOnce
-        };
-
-
-        public static void SetDefault(TweenSettings settings)
-        {
-            TweenSettings.Default = settings;
-        }
-
-        public LoopType LoopType { get; private set; }
-        public bool IsIgnoreTimeScale { get; private set; }
-        public EasingFunction DefaultEasing { get; private set; }
-
-        public TweenSettings(LoopType loopType = LoopType.None, bool ignoreTimeScale = false, EasingFunction defaultEasing = null)
-        {
-            LoopType = loopType;
-            IsIgnoreTimeScale = ignoreTimeScale;
-            DefaultEasing = defaultEasing ?? EasingFunctions.EaseOutQuad;
-        }
     }
 
     public abstract class Tween<TObject, TProperty> : ITween
@@ -127,12 +45,10 @@ namespace ReMotion
         TProperty originalFrom;
         TProperty originalTo;
 
-        bool isCompleted;
         Subject<Unit> completedEvent;
-        float currentTime;
         float delayTime;
-        // TODO:
-        // int repeatCount;
+        float currentTime;
+        int repeatCount;
 
         public Tween(TweenSettings settings, TObject target, TweenGetter<TObject, TProperty> getter, TweenSetter<TObject, TProperty> setter, EasingFunction easingFunction, float duration, TProperty to, bool isRelativeTo)
         {
@@ -159,99 +75,148 @@ namespace ReMotion
             }
 
             this.difference = GetDifference(from, to);
-            currentTime = 0;
+            this.currentTime = 0;
+            this.repeatCount = 0;
         }
 
         public Tween<TObject, TProperty> Start()
         {
-            if (this.Status == TweenStatus.Stopped)
-            {
-                this.originalFrom = getter(target);
-                Reset();
-                this.Status = TweenStatus.WaitingToRun;
-                TweenEngine.Instance.Add(this);
-            }
+            this.originalFrom = getter(target);
+            this.delayTime = 0;
+
+            StartCore();
             return this;
         }
 
 
         public Tween<TObject, TProperty> Start(TProperty from, float delay)
         {
-            // TODO:set from, delay
+            this.originalFrom = from;
+            if (delay <= 0) delay = 0;
+            this.delayTime = delay;
+
+            StartCore();
             return this;
         }
 
         public Tween<TObject, TProperty> Start(TProperty from, float delay, bool isRelativeFrom)
         {
-            // TODO:set from, delay
+            this.originalFrom = (isRelativeFrom)
+                ? AddOperator(getter(target), from)
+                : from;
+            if (delay <= 0) delay = 0;
+            this.delayTime = delay;
+
+            StartCore();
             return this;
         }
 
 
         public Tween<TObject, TProperty> StartFrom(TProperty from)
         {
-            if (this.Status == TweenStatus.Stopped)
-            {
-                this.originalFrom = from;
-                Reset();
-                this.Status = TweenStatus.WaitingToRun;
-                TweenEngine.Instance.Add(this);
-            }
+            this.originalFrom = from;
+            this.delayTime = 0;
+
+            StartCore();
             return this;
         }
 
         public Tween<TObject, TProperty> StartFromRelative(TProperty from)
         {
-            if (this.Status == TweenStatus.Stopped)
-            {
-                this.originalFrom = from;
-                Reset();
-                this.Status = TweenStatus.WaitingToRun;
-                TweenEngine.Instance.Add(this);
-            }
+            this.originalFrom = AddOperator(getter(target), from);
+            this.delayTime = 0;
+
+            StartCore();
             return this;
         }
 
-        public Tween<TObject, TProperty> StartAfter(float delayTime)
+        public Tween<TObject, TProperty> StartAfter(float delay)
         {
-            if (delayTime <= 0) delayTime = 0;
-            this.delayTime = delayTime;
-            return Start();
+            this.originalFrom = getter(target);
+            if (delay <= 0) delay = 0;
+            this.delayTime = delay;
+
+            StartCore();
+            return this;
+        }
+
+        void StartCore()
+        {
+            Reset();
+            switch (this.Status)
+            {
+                case TweenStatus.Stopped:
+                    this.Status = TweenStatus.Running;
+                    TweenEngine.Instance.Add(this);
+                    break;
+                case TweenStatus.Running:
+                case TweenStatus.Pausing:
+                case TweenStatus.WaitingToStop:
+                default:
+                    Status = TweenStatus.Running;
+                    break;
+            }
         }
 
         public void Stop()
         {
-            if (Status != TweenStatus.Stopped)
+            switch (this.Status)
             {
-                Status = TweenStatus.WaitingToStop;
+                case TweenStatus.Stopped:
+                    break;
+                case TweenStatus.Running:
+                case TweenStatus.Pausing:
+                case TweenStatus.WaitingToStop:
+                default:
+                    Status = TweenStatus.WaitingToStop;
+                    break;
             }
         }
 
         public void Pause()
         {
-            if (Status == TweenStatus.Running || Status == TweenStatus.WaitingToRun)
+            switch (this.Status)
             {
-                Status = TweenStatus.Pausing;
+                case TweenStatus.Running:
+                case TweenStatus.WaitingToStop:
+                    Status = TweenStatus.Pausing;
+                    break;
+                case TweenStatus.Pausing:
+                case TweenStatus.Stopped:
+                default:
+                    break;
             }
         }
 
         public void Resume()
         {
-            if (Status == TweenStatus.Pausing)
+            switch (this.Status)
             {
-                Status = TweenStatus.Running;
+                case TweenStatus.Pausing:
+                    Status = TweenStatus.Running;
+                    break;
+                case TweenStatus.Stopped:
+                case TweenStatus.Running:
+                case TweenStatus.WaitingToStop:
+                default:
+                    break;
             }
         }
 
         public void PauseOrResume()
         {
-            if (Status == TweenStatus.Running || Status == TweenStatus.WaitingToRun)
+            switch (this.Status)
             {
-                Status = TweenStatus.Pausing;
-            }
-            else if (Status == TweenStatus.Pausing)
-            {
-                Status = TweenStatus.Running;
+                case TweenStatus.Pausing:
+                    Status = TweenStatus.Running;
+                    break;
+                case TweenStatus.Running:
+                    Status = TweenStatus.Pausing;
+                    break;
+                case TweenStatus.WaitingToStop:
+                case TweenStatus.Stopped:
+                default:
+                    break;
             }
         }
 
@@ -284,6 +249,16 @@ namespace ReMotion
             });
         }
 
+        public void AttachSafe(GameObject gameObject)
+        {
+            gameObject.OnDestroyAsObservable().Subscribe(_ => this.Stop());
+        }
+
+        public void AttachSafe(Component component)
+        {
+            component.OnDestroyAsObservable().Subscribe(_ => this.Stop());
+        }
+
         protected abstract TProperty AddOperator(TProperty left, TProperty right);
 
         protected abstract TProperty GetDifference(TProperty from, TProperty to);
@@ -295,18 +270,17 @@ namespace ReMotion
         /// </summary>
         public bool MoveNext(ref float deltaTime, ref float unscaledDeltaTime)
         {
-            if (this.Status == TweenStatus.WaitingToStop)
+            switch (this.Status)
             {
-                this.Status = TweenStatus.Stopped;
-                return false;
-            }
-            else if (this.Status == TweenStatus.Pausing)
-            {
-                return true;
-            }
-            else if (this.Status != TweenStatus.Running)
-            {
-                this.Status = TweenStatus.Running;
+                case TweenStatus.Pausing:
+                    return true;
+                case TweenStatus.Running:
+                    break;
+                case TweenStatus.WaitingToStop:
+                case TweenStatus.Stopped:
+                default:
+                    this.Status = TweenStatus.Stopped;
+                    return false;
             }
 
             if (delayTime != 0)
@@ -344,14 +318,20 @@ namespace ReMotion
 
             if (completed)
             {
+                repeatCount++;
                 switch (Settings.LoopType)
                 {
                     case LoopType.Restart:
                         this.from = originalFrom;
                         currentTime = 0;
                         break;
-                    case LoopType.Cycle: // swap from -> to
                     case LoopType.CycleOnce:
+                        if (repeatCount == 2)
+                        {
+                            return false; // complete
+                        }
+                        goto case LoopType.Cycle;
+                    case LoopType.Cycle: // swap from -> to
                         var temp = from;
                         from = to;
                         to = temp;

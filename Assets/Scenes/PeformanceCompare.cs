@@ -1,4 +1,5 @@
 ﻿using DG.Tweening;
+using UniRx.Triggers;
 using ReMotion.Extensions;
 using System;
 using System.Collections.Generic;
@@ -32,11 +33,15 @@ namespace ReMotion.Sandbox
             Application.targetFrameRate = -1;
             UniRx.MainThreadDispatcher.Initialize();
             LeanTween.init(20000);
+            DOTween.Init(null, false, null);
 
             // Command
             var canExecute = new ReactiveProperty<bool>(true);
 
-            buttonReMotion.BindOnClick(canExecute, _ => RunTween("ReMotion", xxx => xxx.transform.TweenPosition(new Vector3(10, 10, 10), 3.0f, EasingFunctions.Linear)));
+            buttonReMotion.BindOnClick(canExecute, _ => RunTween("ReMotion", xxx =>
+            {
+                xxx.transform.TweenPosition(new Vector3(10, 10, 10), 3.0f, EasingFunctions.Linear);
+            }));
             buttonDoTween.BindOnClick(canExecute, _ => RunTween("DOTween", xxx => xxx.transform.DOMove(new Vector3(10, 10, 10), 3f).SetEase(Ease.Linear)));
             buttonLeanTween.BindOnClick(canExecute, _ => RunTween("LeanTween", xxx => LeanTween.move(xxx, new Vector3(10, 10, 10), 3.0f).setEase(LeanTweenType.linear)));
             buttoniTween.BindOnClick(canExecute, _ => RunTween("iTween", xxx => iTween.MoveTo(xxx, new Vector3(10f, 10f, 10f), 3.0f)));
