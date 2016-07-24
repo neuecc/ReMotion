@@ -136,7 +136,29 @@ namespace ReMotion.Extensions
 
         // LocalPositionX, Y, Z
 
+        // Scale
 
+
+
+        /// <summary>Tween transfrom scale(X, Y).</summary>
+        public static Tween<Transform, Vector2> TweenLocalScaleXY(this Transform transform, Vector2 to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
+        {
+            settings = settings ?? TweenSettings.Default;
+            easing = easing ?? settings.DefaultEasing;
+
+            var tween = settings.UseVector2Tween(transform, x => x.localScale, (Transform t, ref Vector2 v) =>
+            {
+                var p = t.localScale;
+                t.localScale = new Vector3 { x = v.x, y = v.y, z = p.z };
+            }, easing, duration, to, isRelativeTo);
+
+            if (autoStart)
+            {
+                tween.Start();
+            }
+
+            return tween;
+        }
 
 
 
