@@ -60,12 +60,6 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
@@ -143,27 +137,25 @@
     <Compile Include="Assets\PerfTest\Uween\Scripts\TweenYZ.cs" />
     <Compile Include="Assets\PerfTest\Uween\Scripts\TweenZ.cs" />
     <Compile Include="Assets\PerfTest\iTween\iTween.cs" />
-    <Compile Include="Assets\Scenes\PeformanceCompare.cs" />
     <Compile Include="Assets\Scenes\MainScene.cs" />
+    <Compile Include="Assets\Scenes\PeformanceCompare.cs" />
     <Compile Include="Assets\Scripts\Delegates.cs" />
     <Compile Include="Assets\Scripts\EasingFunctions.cs" />
-    <Compile Include="Assets\Scripts\TweenSettings.cs" />
     <Compile Include="Assets\Scripts\ObservableEasing.cs" />
     <Compile Include="Assets\Scripts\SpecificTweens.cs" />
     <Compile Include="Assets\Scripts\Tween.cs" />
     <Compile Include="Assets\Scripts\TweenEngine.cs" />
     <Compile Include="Assets\Scripts\TweenExtensions.cs" />
+    <Compile Include="Assets\Scripts\TweenSettings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Generator\ExtensionGenerator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ExtensionGenerator.cs</LastGenOutput>
+    </None>
     <None Include="Assets\PerfTest\DOTween\DOTween.XML" />
     <None Include="Assets\PerfTest\DOTween\Editor\DOTweenEditor.XML" />
     <None Include="Assets\PerfTest\DOTween\readme.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Assets\Generator\ExtensionGenerator.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>ExtensionGenerator.cs</LastGenOutput>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
