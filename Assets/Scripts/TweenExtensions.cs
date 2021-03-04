@@ -192,6 +192,57 @@ namespace ReMotion.Extensions
         {
             return TweenColor(graphic, to, duration, easing, settings, isRelativeTo, autoStart: false).ToObservable();
         }
+        
+        /// <summary>Tween color alpha.</summary>
+        public static Tween<SpriteRenderer, float> TweenAlpha(this SpriteRenderer spriteRenderer, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
+        {
+            settings = settings ?? TweenSettings.Default;
+            easing = easing ?? settings.DefaultEasing;
+
+            var tween = settings.UseFloatTween(spriteRenderer, x => x.color.a, (SpriteRenderer target, ref float value) =>
+            {
+                var x = target.color;
+                target.color = new Color { r = x.r, g = x.g, b = x.b, a = value };
+            }, easing, duration, to, isRelativeTo);
+
+            if (autoStart)
+            {
+                tween.Start();
+            }
+
+            return tween;
+        }
+
+        /// <summary>Tween color alpha.</summary>
+        public static IObservable<Unit> TweenAlphaAsync(this SpriteRenderer spriteRenderer, float to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false)
+        {
+            return TweenAlpha(spriteRenderer, to, duration, easing, settings, isRelativeTo, autoStart: false).ToObservable();
+        }
+
+        /// <summary>Tween color.</summary>
+        public static Tween<SpriteRenderer, Color> TweenColor(this SpriteRenderer spriteRenderer, Color to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false, bool autoStart = true)
+        {
+            settings = settings ?? TweenSettings.Default;
+            easing = easing ?? settings.DefaultEasing;
+
+            var tween = settings.UseColorTween(spriteRenderer, x => x.color, (SpriteRenderer target, ref Color value) =>
+            {
+                target.color = value;
+            }, easing, duration, to, isRelativeTo);
+
+            if (autoStart)
+            {
+                tween.Start();
+            }
+
+            return tween;
+        }
+
+        /// <summary>Tween color.</summary>
+        public static IObservable<Unit> TweenColorAsync(this SpriteRenderer spriteRenderer, Color to, float duration, EasingFunction easing = null, TweenSettings settings = null, bool isRelativeTo = false)
+        {
+            return TweenColor(spriteRenderer, to, duration, easing, settings, isRelativeTo, autoStart: false).ToObservable();
+        }
 
     }
 }
