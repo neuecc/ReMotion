@@ -335,27 +335,17 @@ namespace ReMotion
 
             protected override Color AddOperator(Color left, Color right)
             {
-                return left + right;
+                return right;
             }
 
             protected override Color GetDifference(Color from, Color to)
             {
-                return new Color(
-                   to.a - from.a,
-                   to.r - from.r,
-                   to.g - from.g,
-                   to.b - from.b
-                );
+                return from - to;
             }
 
             protected override void CreateValue(ref Color from, ref Color difference, ref float ratio, out Color value)
             {
-                value = new Color(
-                    from.a + (difference.a * ratio),
-                    from.r + (difference.r * ratio),
-                    from.g + (difference.g * ratio),
-                    from.b + (difference.b * ratio)
-                );
+                value = Color.Lerp(from, from - difference, ratio);
             }
         }
     }
